@@ -1,0 +1,187 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\homecontroller;
+use App\Http\Controllers\relationcontroller;
+use App\Http\Controllers\autorcontroller;
+use App\Http\Controllers\registercontroller;
+use Illuminate\Support\Facades\Cache;
+use App\Models\datapost;
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
+/* Route::get('/', function () {
+    return view('welcome');
+}); */
+
+route::get('/',function(){
+    return view('posts');
+    });
+
+/* Route::view('post','post'); */
+
+/* 'post'=>file_get_contents(__DIR__ . '/../resources/posts/my-first-post.html')*/
+
+
+Route::get('posts/{post}', function($slug){
+$path=__DIR__ . "/../resources/posts/{$slug}.html";
+if(!file_exists($path)){
+
+    return redirect('/');
+    // abort(404);
+    }
+    else{
+        /* file_get_contents=FILE KO READ KRTA HAY */
+        /* $post=file_get_contents("$path",FALSE,NULL,10,2000) */
+$post=file_get_contents($path);
+return view('post',['post'=>$post]);
+    }
+});
+
+/* new start */
+
+route::get('index',function(){
+    return view('allpost');
+    });
+
+
+route::get('some/{one}',function($slugg){
+    $address=__DIR__ . "/../resources/allpost/{$slugg}.html";
+    if(!file_exists($address)){
+
+        return redirect('/index');
+        // abort(404);
+        }
+    
+    
+        
+        $read=cache::remember("allpost.{$slugg}",now()->addMinutes(1),function() use ($address){
+        var_dump('file_get_contents');
+        return file_get_contents($address);
+        });
+
+    return view('variable',['read'=>$read]);
+    
+    });
+
+
+
+route::get('querystring',function(){
+
+    $name=request('name');
+    $gender=request('gender');
+    return view('querystring',['name'=>$name,'gender'=>$gender]);
+});
+
+
+route::get('/checkblade',function(){
+return view('checkblade');
+});
+
+
+route::get('routeparameter/{myfun}',function($mydata){
+    return view('routeparameter',compact('mydata'));
+    });
+    
+route::get('ok',function(){
+return __LINE__ ;
+});
+
+
+
+
+route::get('/cache',[homecontroller::class,'myfun']);
+
+
+/* ******************** performed on route method ******************* */
+
+/* route::get('dataposts',function(){
+    return view('dataposts',['datapostss'=>datapost::orderBy('name','DESC')->get()]);
+});
+
+route::get('dataa/{postt}',function($id){    
+return view('datapost',['datapost'=>datapost::find($id)]);
+}); */
+
+route::get('/dataposts',[homecontroller::class,'allpost']);
+route::get('dataa/{postt}',[homecontroller::class,'post']); 
+
+/* ***********mass assignment********* */
+route::get('mass',[homecontroller::class,'mass']);
+
+
+
+/* ***********route model binding********* */
+route::get('routemodelbinding',[homecontroller::class,'routemodelbind']);
+route::get('bindclick/{mydata}',[homecontroller::class,'bindclick']);
+
+route::get('bindclick/{mydata:name}',[homecontroller::class,'bindclick']);
+/* route::get('bindclick/{mydata:"yahan denay k bajaye model k andr b define krsktay hay"}',[homecontroller::class,'bindclick']); */
+
+/* ***********relationships********* */
+
+route::get('allc',[homecontroller::class,'category']);
+route::get('singlenewpost/{id}',[homecontroller::class,'singlenewpost']);
+route::get('singlecategory/{id}',[homecontroller::class,'singlecategory']);
+
+
+
+
+route::get('onetomany',[relationcontroller::class,'onetomany']);
+
+
+route::get('/student',[relationcontroller::class,'studentfun']);
+
+
+/* ***********author controller********* */
+
+Route::get('manytomany',[autorcontroller::class,'manytomany']);
+
+Route::get('showallessays',[autorcontroller::class,'showall']);
+
+Route::get('studentwise/{student:st_name}',[autorcontroller::class,'studentwise']);
+Route::get('studen/{student:st_name}',[autorcontroller::class,'studentwise']);
+
+
+/* ***********components********* */
+route::get('home',function(){
+return view('home');
+});
+
+route::get('form',function(){
+    return view('form');
+    });
+    
+route::get('all',function(){
+return view('home');
+});
+
+Route::get('all',[autorcontroller::class,'fetch']);
+Route::get('search',[autorcontroller::class,'search']);
+
+
+route::post('register',[registercontroller::class,'add'])->name('register');  
+route::get('register',[registercontroller::class,'display']);
+route::get('/dashboard',[registercontroller::class,'dashboard'])->middleware('routemid');
+route::get('/login',[registercontroller::class,'login'])->middleware('dontgodashboard');
+route::post('/login',[registercontroller::class,'loginuser']);
+Route::get('/dashboard',[registercontroller::class,'homecall'])->middleware('routemid');
+Route::get('/logout',[registercontroller::class,'logout']);
+
+Route::group(['routegroup'=>['routegroup']],function()
+{
+    Route::view('middle','middle');
+});
+
+
+
+
